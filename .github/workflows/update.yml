@@ -9,8 +9,8 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           echo $PWD
-          #git clone https://github.com/yjcn/qBittorrent.git
-          #cd qBittorrent
+          git clone https://yjcn:${{ secrets.GITHUB_TOKEN }}@github.com/yjcn/qBittorrent.git
+          cd qBittorrent
           git remote add upstream https://github.com/qbittorrent/qBittorrent.git
           git fetch upstream
           git checkout master
