@@ -6,8 +6,10 @@ jobs:
     runs-on: ubuntu-18.04
     name: auto update
     steps:
-      - uses: actions/checkout@v2
+      #- uses: actions/checkout@v2
       - run: |
+          git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/yjcn/qBittorrent.git
+          cd qBittorrent
           git remote add upstream https://github.com/qbittorrent/qBittorrent.git
           git fetch upstream
           git checkout master
