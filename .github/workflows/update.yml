@@ -14,6 +14,8 @@ jobs:
           git remote add upstream https://github.com/qbittorrent/qBittorrent.git
           git fetch upstream
           git checkout master
+          git config --global user.email "460990832@qq.com"
+          git config --global user.name "yjcn"
           git merge upstream/master
           git push origin master 
       
