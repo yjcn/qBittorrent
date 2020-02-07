@@ -1,6 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2019  Vladimir Golovnev <glassez@yandex.ru>
+ * Copyright (C) 2020  Vladimir Golovnev <glassez@yandex.ru>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,23 +26,49 @@
  * exception statement from your version.
  */
 
-#pragma once
+#include "nativesessionextension.h"
 
-#include <QHostAddress>
+#include <libtorrent/alert_types.hpp>
 
-class QString;
+#include "nativetorrentextension.h"
 
-namespace BitTorrent
+namespace
 {
-    struct PeerAddress
+    void handleFastresumeRejectedAlert(const lt::fastresume_rejected_alert *alert)
     {
-        QHostAddress ip;
-        ushort port = 0;
+        if (alert->error.value() == lt::errors::mismatching_file_size) {
+#if (LIBTORRENT_VERSION_NUM < 10200)
+            alert->handle.auto_managed(false);
+#else
+            alert->handle.unset_flags(lt::torrent_flags::auto_managed);
+#endif
+            alert->handle.pause();
+        }
+    }
+}
 
-        static PeerAddress parse(const QString &address);
-        QString toString() const;
-    };
+#if (LIBTORRENT_VERSION_NUM >= 10200)
+lt::feature_flags_t NativeSessionExtension::implemented_features()
+{
+    return alert_feature;
+}
 
-    bool operator==(const PeerAddress &left, const PeerAddress &right);
-    uint qHash(const PeerAddress &addr, uint seed);
+std::shared_ptr<lt::torrent_plugin> NativeSessionExtension::new_torrent(const lt::torrent_handle &torrentHandle, void *)
+{
+    return std::make_shared<NativeTorrentExtension>(torrentHandle);
+}
+#else
+boost::shared_ptr<lt::torrent_plugin> NativeSessionExtension::new_torrent(const lt::torrent_handle &torrentHandle, void *)
+{
+    return boost::shared_ptr<lt::torrent_plugin> {new NativeTorrentExtension {torrentHandle}};
+}
+#endif
+
+void NativeSessionExtension::on_alert(const lt::alert *alert)
+{
+    switch (alert->type()) {
+    case lt::fastresume_rejected_alert::alert_type:
+        handleFastresumeRejectedAlert(static_cast<const lt::fastresume_rejected_alert *>(alert));
+        break;
+    }
 }

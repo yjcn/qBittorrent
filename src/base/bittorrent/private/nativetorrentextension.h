@@ -1,6 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2019  Vladimir Golovnev <glassez@yandex.ru>
+ * Copyright (C) 2020  Vladimir Golovnev <glassez@yandex.ru>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,21 +28,22 @@
 
 #pragma once
 
-#include <QHostAddress>
+#include <libtorrent/extensions.hpp>
+#include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/version.hpp>
 
-class QString;
-
-namespace BitTorrent
+class NativeTorrentExtension : public lt::torrent_plugin
 {
-    struct PeerAddress
-    {
-        QHostAddress ip;
-        ushort port = 0;
+public:
+    explicit NativeTorrentExtension(const lt::torrent_handle &torrentHandle);
 
-        static PeerAddress parse(const QString &address);
-        QString toString() const;
-    };
+private:
+#if (LIBTORRENT_VERSION_NUM < 10200)
+    void on_state(int state) override;
+#else
+    void on_state(lt::torrent_status::state_t state) override;
+#endif
+    bool on_pause() override;
 
-    bool operator==(const PeerAddress &left, const PeerAddress &right);
-    uint qHash(const PeerAddress &addr, uint seed);
-}
+    lt::torrent_handle m_torrentHandle;
+};

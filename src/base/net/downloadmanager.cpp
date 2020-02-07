@@ -152,10 +152,8 @@ void Net::DownloadManager::initInstance()
 
 void Net::DownloadManager::freeInstance()
 {
-    if (m_instance) {
-        delete m_instance;
-        m_instance = nullptr;
-    }
+    delete m_instance;
+    m_instance = nullptr;
 }
 
 Net::DownloadManager *Net::DownloadManager::instance()
@@ -348,7 +346,7 @@ Net::ServiceID Net::ServiceID::fromURL(const QUrl &url)
 
 uint Net::qHash(const ServiceID &serviceID, const uint seed)
 {
-    return ::qHash(serviceID.hostName, seed) ^ serviceID.port;
+    return ::qHash(serviceID.hostName, seed) ^ ::qHash(serviceID.port);
 }
 
 bool Net::operator==(const ServiceID &lhs, const ServiceID &rhs)
