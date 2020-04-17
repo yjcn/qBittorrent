@@ -1,7 +1,7 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2015  Vladimir Golovnev <glassez@yandex.ru>
- * Copyright (C) 2006  Christophe Dumez <chris@qbittorrent.org>
+ * Copyright (C) 2020  Prince Gupta <jagannatharjun11@gmail.com>
+ * Copyright (C) 2019  sledgehammer999 <hammered999@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,37 +27,21 @@
  * exception statement from your version.
  */
 
-#include "torrenthandle.h"
+#pragma once
 
-#include <type_traits>
+#include <QListView>
 
-const QString QB_EXT {QStringLiteral(".!qB")};
-
-namespace BitTorrent
+class LogListView : public QListView
 {
-    uint qHash(const BitTorrent::TorrentState key, const uint seed)
-    {
-        return ::qHash(static_cast<std::underlying_type_t<TorrentState>>(key), seed);
-    }
+    Q_OBJECT
+    Q_DISABLE_COPY(LogListView)
 
-    // TorrentHandle
+public:
+    explicit LogListView(QWidget *parent = nullptr);
 
-    const qreal TorrentHandle::USE_GLOBAL_RATIO = -2.;
-    const qreal TorrentHandle::NO_RATIO_LIMIT = -1.;
+public slots:
+    void copySelection() const;
 
-    const int TorrentHandle::USE_GLOBAL_SEEDING_TIME = -2;
-    const int TorrentHandle::NO_SEEDING_TIME_LIMIT = -1;
-
-    const qreal TorrentHandle::MAX_RATIO = 9999.;
-    const int TorrentHandle::MAX_SEEDING_TIME = 525600;
-
-    void TorrentHandle::toggleSequentialDownload()
-    {
-        setSequentialDownload(!isSequentialDownload());
-    }
-
-    void TorrentHandle::toggleFirstLastPiecePriority()
-    {
-        setFirstLastPiecePriority(!hasFirstLastPiecePriority());
-    }
-}
+private:
+    void keyPressEvent(QKeyEvent *event) override;
+};

@@ -1,7 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2015  Vladimir Golovnev <glassez@yandex.ru>
- * Copyright (C) 2006  Christophe Dumez <chris@qbittorrent.org>
+ * Copyright (C) 2019  sledgehammer999 <hammered999@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,37 +26,23 @@
  * exception statement from your version.
  */
 
-#include "torrenthandle.h"
+#pragma once
 
-#include <type_traits>
+#include <QSortFilterProxyModel>
 
-const QString QB_EXT {QStringLiteral(".!qB")};
+#include "base/logger.h"
 
-namespace BitTorrent
+class LogFilterModel : public QSortFilterProxyModel
 {
-    uint qHash(const BitTorrent::TorrentState key, const uint seed)
-    {
-        return ::qHash(static_cast<std::underlying_type_t<TorrentState>>(key), seed);
-    }
+    Q_OBJECT
+    Q_DISABLE_COPY(LogFilterModel)
 
-    // TorrentHandle
+public:
+    explicit LogFilterModel(Log::MsgTypes types = Log::ALL, QObject *parent = nullptr);
+    void setMessageTypes(Log::MsgTypes types);
 
-    const qreal TorrentHandle::USE_GLOBAL_RATIO = -2.;
-    const qreal TorrentHandle::NO_RATIO_LIMIT = -1.;
+private:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
-    const int TorrentHandle::USE_GLOBAL_SEEDING_TIME = -2;
-    const int TorrentHandle::NO_SEEDING_TIME_LIMIT = -1;
-
-    const qreal TorrentHandle::MAX_RATIO = 9999.;
-    const int TorrentHandle::MAX_SEEDING_TIME = 525600;
-
-    void TorrentHandle::toggleSequentialDownload()
-    {
-        setSequentialDownload(!isSequentialDownload());
-    }
-
-    void TorrentHandle::toggleFirstLastPiecePriority()
-    {
-        setFirstLastPiecePriority(!hasFirstLastPiecePriority());
-    }
-}
+    Log::MsgTypes m_types;
+};
