@@ -477,9 +477,9 @@ Session::Session(QObject *parent)
     , m_stopTrackerTimeout(BITTORRENT_SESSION_KEY("StopTrackerTimeout"), 1)
 #endif
     , m_maxConnections(BITTORRENT_SESSION_KEY("MaxConnections"), 500, lowerLimited(0, -1))
-    , m_maxUploads(BITTORRENT_SESSION_KEY("MaxUploads"), -1, lowerLimited(0, -1))
+    , m_maxUploads(BITTORRENT_SESSION_KEY("MaxUploads"), 20, lowerLimited(0, -1))
     , m_maxConnectionsPerTorrent(BITTORRENT_SESSION_KEY("MaxConnectionsPerTorrent"), 100, lowerLimited(0, -1))
-    , m_maxUploadsPerTorrent(BITTORRENT_SESSION_KEY("MaxUploadsPerTorrent"), -1, lowerLimited(0, -1))
+    , m_maxUploadsPerTorrent(BITTORRENT_SESSION_KEY("MaxUploadsPerTorrent"), 4, lowerLimited(0, -1))
     , m_btProtocol(BITTORRENT_SESSION_KEY("BTProtocol"), BTProtocol::Both
         , clampValue(BTProtocol::Both, BTProtocol::UTP))
     , m_isUTPRateLimited(BITTORRENT_SESSION_KEY("uTPRateLimited"), true)
@@ -2599,7 +2599,7 @@ void Session::saveTorrentsQueue()
     QMap<int, QString> queue; // Use QMap since it should be ordered by key
     for (const TorrentHandleImpl *torrent : asConst(m_torrents)) {
         // We require actual (non-cached) queue position here!
-        const int queuePos = LTUnderlyingType<LTQueuePosition> {torrent->nativeHandle().queue_position()};
+        const int queuePos = static_cast<LTUnderlyingType<LTQueuePosition>>(torrent->nativeHandle().queue_position());
         if (queuePos >= 0)
             queue[queuePos] = torrent->hash();
     }
